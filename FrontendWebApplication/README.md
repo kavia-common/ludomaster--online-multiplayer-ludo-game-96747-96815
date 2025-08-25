@@ -39,6 +39,10 @@ The app runs at http://localhost:3000
 
 See .env.example for details.
 
+Database initialization (optional for local dev):
+- Run the schema initializer from the database workspace:
+  node ../ludomaster--online-multiplayer-ludo-game-96747-96817/Database_MongoDB/scripts/initSchema.js
+
 ## Project Structure
 
 - src/api: REST and WebSocket helpers
