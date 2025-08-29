@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { StatsAPI } from "../api";
 import { format } from "date-fns";
 
 // PUBLIC_INTERFACE
@@ -8,9 +9,7 @@ export default function History({ apiBase }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/stats/history`, { headers: authHeaders() });
-        if (!res.ok) throw new Error((await res.json()).message || "Failed to load history");
-        const data = await res.json();
+        const data = await StatsAPI.history(apiBase);
         setRows(data || []);
       } catch (e) {
         setErr(e.message || "Failed to load history");
@@ -40,13 +39,4 @@ export default function History({ apiBase }) {
       </div>
     </div>
   );
-}
-
-function authHeaders() {
-  try {
-    const token = JSON.parse(localStorage.getItem("ludomaster_auth") || "{}").state?.token;
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  } catch {
-    return {};
-  }
 }

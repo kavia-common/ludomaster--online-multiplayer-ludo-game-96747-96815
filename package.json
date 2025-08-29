@@ -1,0 +1,10 @@
+{
+  "name": "ludomaster-monorepo",
+  "private": true,
+  "workspaces": [],
+  "scripts": {
+    "start": "npm --prefix FrontendWebApplication run start",
+    "build": "npm --prefix FrontendWebApplication run build",
+    "test": "npm --prefix FrontendWebApplication run test"
+  }
+}

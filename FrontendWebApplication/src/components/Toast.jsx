@@ -39,6 +39,7 @@ export function ToastProvider({ children }) {
 export function useToasts() {
   const ctx = useContext(ToastCtx);
   if (!ctx) {
+    // In case provider isn't wrapped (e.g., tests), provide a no-op.
     return { toasts: [], add: () => {}, remove: () => {}, announce: (msg) => console.log("[toast]", msg) };
   }
   return { ...ctx, announce: (msg) => ctx.add("Announcement", msg) };

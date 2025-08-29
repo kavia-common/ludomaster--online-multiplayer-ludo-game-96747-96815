@@ -6,6 +6,7 @@ import { useAuthStore } from "../../state/authStore";
 // PUBLIC_INTERFACE
 export default function Register({ apiBase, onSuccess }) {
   const [email, setEmail] = useState("");
+  the
   const [mobile, setMobile] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");

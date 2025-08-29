@@ -1,157 +1,52 @@
 /**
  * High-level API wrappers mapping to backend endpoints.
  */
+import { apiRequest } from "./client";
+
 // AUTH
 // PUBLIC_INTERFACE
 export const AuthAPI = {
   /** Login with email or mobile and password. */
-  login: async (payload, apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Login failed");
-    return res.json();
-  },
+  login: (payload, apiBase) => apiRequest("/auth/login", { method: "POST", body: payload, apiBase }),
   /** Register a new account */
-  register: async (payload, apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Register failed");
-    return res.json();
-  },
+  register: (payload, apiBase) => apiRequest("/auth/register", { method: "POST", body: payload, apiBase }),
   /** Get current profile using token */
-  me: async (apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/auth/me`, {
-      headers: authHeaders(),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to load profile");
-    return res.json();
-  },
+  me: (apiBase) => apiRequest("/auth/me", { apiBase }),
 };
 
 // PROFILE
 // PUBLIC_INTERFACE
 export const ProfileAPI = {
-  get: async (apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/profile`, { headers: authHeaders() });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to load profile");
-    return res.json();
-  },
-  update: async (payload, apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/profile`, {
-      method: "PUT",
-      headers: { ...authHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to update profile");
-    return res.json();
-  },
-  setAvatar: async (base64, apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/profile/avatar`, {
-      method: "PUT",
-      headers: { ...authHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify({ image: base64 }),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to set avatar");
-    return res.json();
-  },
+  get: (apiBase) => apiRequest("/profile", { apiBase }),
+  update: (payload, apiBase) => apiRequest("/profile", { method: "PUT", body: payload, apiBase }),
+  /** Upload avatar via base64 content to keep FE simple in this template */
+  setAvatar: (base64, apiBase) => apiRequest("/profile/avatar", { method: "PUT", body: { image: base64 }, apiBase }),
 };
 
 // ROOMS
 // PUBLIC_INTERFACE
 export const RoomsAPI = {
-  list: async (apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/rooms`, { headers: authHeaders() });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to list rooms");
-    return res.json();
-  },
-  create: async (payload, apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/rooms`, {
-      method: "POST",
-      headers: { ...authHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to create room");
-    return res.json();
-  },
-  join: async (roomId, payload, apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/rooms/${roomId}/join`, {
-      method: "POST",
-      headers: { ...authHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify(payload || {}),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to join room");
-    return res.json();
-  },
-  leave: async (roomId, apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/rooms/${roomId}/leave`, {
-      method: "POST",
-      headers: authHeaders(),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to leave room");
-    return res.json();
-  },
-  detail: async (roomId, apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/rooms/${roomId}`, { headers: authHeaders() });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to fetch room");
-    return res.json();
-  },
+  list: (apiBase) => apiRequest("/rooms", { apiBase }),
+  create: (payload, apiBase) => apiRequest("/rooms", { method: "POST", body: payload, apiBase }),
+  join: (roomId, payload, apiBase) => apiRequest(`/rooms/${roomId}/join`, { method: "POST", body: payload, apiBase }),
+  leave: (roomId, apiBase) => apiRequest(`/rooms/${roomId}/leave`, { method: "POST", apiBase }),
+  detail: (roomId, apiBase) => apiRequest(`/rooms/${roomId}`, { apiBase }),
 };
 
-/** GAME **/
+// GAME
+// PUBLIC_INTERFACE
 export const GameAPI = {
-  roll: async (roomId, apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/game/${roomId}/roll`, {
-      method: "POST",
-      headers: authHeaders(),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to roll");
-    return res.json();
-  },
-  move: async (roomId, payload, apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/game/${roomId}/move`, {
-      method: "POST",
-      headers: { ...authHeaders(), "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to move");
-    return res.json();
-  },
-  startSolo: async (apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/game/solo`, {
-      method: "POST",
-      headers: authHeaders(),
-    });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to start solo");
-    return res.json();
-  },
+  /** Request a dice roll (if backend allows via REST) */
+  roll: (roomId, apiBase) => apiRequest(`/game/${roomId}/roll`, { method: "POST", apiBase }),
+  /** Make a move for a piece */
+  move: (roomId, payload, apiBase) => apiRequest(`/game/${roomId}/move`, { method: "POST", body: payload, apiBase }),
+  /** For solo vs AI, create a local session on backend */
+  startSolo: (apiBase) => apiRequest("/game/solo", { method: "POST", apiBase }),
 };
 
-/** STATS **/
+// STATS
+// PUBLIC_INTERFACE
 export const StatsAPI = {
-  leaderboard: async (apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/stats/leaderboard`, { headers: authHeaders() });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to load leaderboard");
-    return res.json();
-  },
-  history: async (apiBase) => {
-    const res = await fetch(`${apiBase || process.env.REACT_APP_API_BASE || "/api"}/stats/history`, { headers: authHeaders() });
-    if (!res.ok) throw new Error((await res.json()).message || "Failed to load history");
-    return res.json();
-  },
+  leaderboard: (apiBase) => apiRequest("/stats/leaderboard", { apiBase }),
+  history: (apiBase) => apiRequest("/stats/history", { apiBase }),
 };
-
-// Helpers
-function authHeaders() {
-  try {
-    const token = JSON.parse(localStorage.getItem("ludomaster_auth") || "{}").state?.token;
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  } catch {
-    return {};
-  }
-}

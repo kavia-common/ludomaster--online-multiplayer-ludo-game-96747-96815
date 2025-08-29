@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { RoomsAPI } from "../api";
+import { createWS } from "../api/client";
 import ChatPanel from "../components/ChatPanel";
 import { useAuthStore } from "../state/authStore";
 
 // PUBLIC_INTERFACE
-export default function RoomDetail({ apiBase }) {
+export default function RoomDetail({ apiBase, wsBase }) {
   const { roomId } = useParams();
   const [room, setRoom] = useState(null);
   const [password, setPassword] = useState("");
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState("");
+  const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
@@ -35,6 +37,17 @@ export default function RoomDetail({ apiBase }) {
       setError(e.message || "Join failed");
       setJoining(false);
     }
+  };
+
+  useEffect(() => {
+    if (!roomId) return;
+    const { socket: ws } = createWS(`/rooms/${roomId}`, { wsBase });
+    setSocket(ws);
+    return () => ws.close();
+  }, [roomId, wsBase]);
+
+  const sendChat = (content) => {
+    socket?.send(JSON.stringify({ type: "chat", content }));
   };
 
   if (!room) return <div role="status" className="badge">Loading…</div>;
@@ -63,7 +76,7 @@ export default function RoomDetail({ apiBase }) {
       </div>
       <div className="card">
         <h3>Room Chat</h3>
-        <ChatPanel socket={null} onSend={()=>{}} />
+        <ChatPanel socket={socket} onSend={sendChat} />
       </div>
     </div>
   );

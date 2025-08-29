@@ -15,6 +15,7 @@
     "zustand": "^4.5.5"
   },
   "scripts": {
+    "prebuild": "npm ci --silent || npm install --silent",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --watchAll=false",
